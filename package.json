@@ -1,0 +1,15 @@
+{
+  "name": "react-pusher",
+  "version": "0.1.0",
+  "description": "A react component for subscribing to pusher channels",
+  "main": "index.js",
+  "scripts": {
+    "test": "npm test"
+  },
+  "keywords": [
+    "pusher",
+    "react"
+  ],
+  "author": "",
+  "license": "MIT"
+}
