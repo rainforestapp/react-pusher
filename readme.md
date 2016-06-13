@@ -1,5 +1,12 @@
 # React Pusher Component
 
+### A community managed React Component for managing Pusher subscriptions.
+
+*Originally conceived and implemented by @ziahamza and @prayogoa from rainforest.*
+
+## Rationale
+
+We use pusher at rainforest. 
 
 ## Usage
 
