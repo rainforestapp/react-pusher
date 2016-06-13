@@ -2,7 +2,7 @@
 
 ### A community managed React Component for managing Pusher subscriptions.
 
-*Originally conceived and implemented by @ziahamza and @prayogoa.*
+**Originally conceived and implemented by [@ziahamza](https://github.com/ziahamza) and [@prayogoa](https://github.com/prayogoa).**
 
 ## Usage
 
