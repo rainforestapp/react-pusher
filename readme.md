@@ -19,9 +19,9 @@ const pusherClient = new Pusher({
 setPusher(pusherClient);
 ```
 
-Then you simply mount the component, inside another component of yours. The pusher subscription will stay alive for as long as the component does.
+2. Then you simply mount the component, inside another component of yours. The pusher subscription will stay alive for as long as the component does. It subscribes to events when mounted, and cleans up hanging subscriptions when unmounted.
 
-Here's an example use of pusher-react in combination with redux.
+Here's an example of using pusher-react in combination with redux.
 
 ```js
 import { fetchList } from './actions';
