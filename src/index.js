@@ -1,7 +1,4 @@
 import React, { Component, PropTypes as T } from 'react';
-import bindAll from 'lodash/function/bindAll';
-import { Map, Set } from 'immutable';
-import PusherApi from '../../pusher';
 
 export default class Pusher extends Component {
   static propTypes = {
@@ -10,11 +7,16 @@ export default class Pusher extends Component {
     event: T.string.isRequired,
   };
 
-  constructor(props) {
-    super(props);
-    bindAll(this, 'onUpdate');
+  static pusherClient = null;
+  static channels = {};
 
-    this.bind(props.channel, props.event);
+  constructor(props) {
+    if (!Pusher.pusherClient) {
+      throw new Error('you must set a pusherClient by calling setPusherClient');
+    }
+
+    super(props);
+    this.bindPusherEvent(props.channel, props.event);
   }
 
   componentWillReceiveProps({ channel: newChannel, event: newEvent }) {
@@ -23,56 +25,39 @@ export default class Pusher extends Component {
       return;
     }
 
-    this.unbind(channel, event);
-    this.bind(newChannel, newEvent);
-
-    if (channel !== newChannel) {
-      this.cleanupChannel(channel);
-    }
+    this.bindPusherEvent(newChannel, newEvent);
+    this.unbindPusherEvent(channel, event);
   }
 
   componentWillUnmount() {
-    this.unbind(this.props.channel, this.props.event);
-    this.cleanupChannel(this.props.channel);
+    this.unbindPusherEvent(this.props.channel, this.props.event);
   }
 
-  unbind(channel, event) {
-    this._channel.unbind(event, this.onUpdate);
-    Pusher.channels = Pusher.channels.update(channel, Map(), (channelEvents) => {
-      let events = channelEvents.update(event, Set(), (handlers) => handlers.delete(this));
+  unbindPusherEvent(channel, event) {
+    this._channel.unbind(event, this.props.onUpdate);
+    Pusher.channels[channel]--;
 
-      if (events.get(event).size === 0) {
-        events = events.delete(event);
-      }
-
-      return events;
-    });
-  }
-
-  cleanupChannel(channel) {
-    if (Pusher.channels.get(channel).size === 0) {
-      Pusher.channels = Pusher.channels.delete(channel);
-      PusherApi.unsubscribe(channel);
+    if (Pusher.channels[channel] <= 0) {
+      delete Pusher.channels[channel];
+      Pusher.pusherClient.unsubscribe(channel);
     }
   }
 
-  bind(channel, event) {
-    this._channel = PusherApi.channels.find(channel) || PusherApi.subscribe(channel);
-    this._channel.bind(event, this.onUpdate);
+  bindPusherEvent(channel, event) {
+    this._channel =
+      Pusher.pusherClient.channels.find(channel)
+      || Pusher.pusherClient.subscribe(channel);
+    this._channel.bind(event, this.props.onUpdate);
 
-    Pusher.channels = Pusher.channels.update(channel, Map(), (channelEvents) =>
-      channelEvents.update(event, Set(), (handlers) => handlers.add(this))
-    );
+    if (Pusher.channels[channel] === undefined) Pusher.channels[channel] = 0;
+    Pusher.channels[channel]++;
   }
 
-  static channels = Map();
   _channel = null;
-
-  onUpdate(ev) {
-    this.props.onUpdate(ev);
-  }
 
   render() {
     return <noscript />;
   }
 }
+
+export const setPusherClient = (pusherClient) => { Pusher.pusherClient = pusherClient; };

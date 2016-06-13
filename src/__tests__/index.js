@@ -1,70 +1,126 @@
-jest.dontMock('../index');
-jest.dontMock('../../../pusher');
-jest.dontMock('../../../config');
-
-const Pusher = require('../index');
+jest.unmock('../');
+import Pusher, { setPusherClient } from '../';
 import { shallow } from 'enzyme';
-import { Map } from 'immutable';
 import React from 'react';
-const PusherApi = require('../../../pusher');
-let component, pusherChannel = null;
-const onUpdateSpy = jasmine.createSpy('onUpdate');
+
+let comp, props, channelMock, pusherMock;
+const channel = 'foo';
+const event = 'bar';
 
 describe('Pusher', () => {
   beforeEach(() => {
-    Pusher.channels = Map();
-    pusherChannel = jasmine.createSpyObj('channel', ['bind', 'unbind']);
-    spyOn(PusherApi, 'subscribe').and.returnValue(pusherChannel);
-    spyOn(PusherApi, 'unsubscribe');
-    onUpdateSpy.calls.reset();
-    component = shallow(<Pusher channel="test" event="log" onUpdate={onUpdateSpy} />);
+    channelMock = {
+      bind: jasmine.createSpy('bind'),
+      unbind: jasmine.createSpy('unbind'),
+    };
+
+    pusherMock = {
+      subscribe: jasmine.createSpy('subscribe').and.returnValue(channelMock),
+      unsubscribe: jasmine.createSpy('unsubscribe'),
+      channels: {
+        find: jasmine.createSpy('find'),
+      },
+    };
+
+    props = {
+      channel,
+      event,
+      onUpdate: jasmine.createSpy('onUpdate'),
+    };
   });
 
-  it('subscribes on mount', () => {
-    expect(PusherApi.subscribe).toHaveBeenCalledWith('test');
+  describe('without pusherClient', () => {
+    it('throws an error if no pusherClient is set when component is mounted', () => {
+      const render = () => shallow(<Pusher {...props} />);
+      expect(render).toThrow();
+    });
   });
 
-  it('binds event properly', () => {
-    expect(pusherChannel.bind).toHaveBeenCalledWith('log', component.instance().onUpdate);
-  });
-
-  describe('on change props', () => {
+  describe('with pusherClient', () => {
     beforeEach(() => {
-      pusherChannel.unbind.calls.reset();
-      pusherChannel.bind.calls.reset();
-      PusherApi.unsubscribe.calls.reset();
-      PusherApi.subscribe.calls.reset();
+      setPusherClient(pusherMock);
     });
 
-    it('rebinds on event change', () => {
-      component.setProps({ event: 'new_test' });
-      expect(pusherChannel.unbind).toHaveBeenCalledWith('log', component.instance().onUpdate);
-      expect(pusherChannel.bind).toHaveBeenCalledWith('new_test', component.instance().onUpdate);
-      expect(PusherApi.unsubscribe).not.toHaveBeenCalled();
+    afterEach(() => {
+      comp.unmount();
+      Pusher.channels = {};
     });
 
-    it('unsubscribes fully and rebinds on channel change', () => {
-      component.setProps({ event: 'new_test', channel: 'channel_new' });
-      expect(pusherChannel.unbind).toHaveBeenCalledWith('log', component.instance().onUpdate);
-      expect(pusherChannel.bind).toHaveBeenCalledWith('new_test', component.instance().onUpdate);
-      expect(PusherApi.unsubscribe).toHaveBeenCalledWith('test');
-      expect(PusherApi.subscribe).toHaveBeenCalledWith('channel_new');
+
+    it('renders nothing but a noscript tag', () => {
+      comp = shallow(<Pusher {...props} />);
+      expect(comp.html()).toEqual('<noscript></noscript>');
     });
-  });
 
-  it('unsubscribes only when necessary', () => {
-    const anotherComponent = shallow(<Pusher channel="test" event="log" onUpdate={onUpdateSpy} />);
+    describe('on initialisation', () => {
+      it('calls pusher.channels.find to get a pre-existing channel', () => {
+        comp = shallow(<Pusher {...props} />);
+        expect(pusherMock.channels.find).toHaveBeenCalledWith(channel);
+      });
 
-    component.instance().componentWillUnmount();
+      it('calls pusher.subscribe if pusherMock.channels.find does not return a channel', () => {
+        comp = shallow(<Pusher {...props} />);
+        expect(pusherMock.subscribe).toHaveBeenCalledWith(channel);
+      });
 
-    expect(pusherChannel.unbind).toHaveBeenCalledWith('log', component.instance().onUpdate);
-    expect(PusherApi.unsubscribe).not.toHaveBeenCalled();
+      it('does not call pusherMock.subscribe pusher.channels.find finds a channel', () => {
+        pusherMock.channels.find.and.returnValue(channelMock);
+        comp = shallow(<Pusher {...props} />);
+        expect(pusherMock.subscribe).not.toHaveBeenCalled();
+      });
 
-    pusherChannel.unbind.calls.reset();
+      it('subscribes to channel and binds this.onUpdate to channel', () => {
+        comp = shallow(<Pusher {...props} />);
+        expect(channelMock.bind).toHaveBeenCalledWith(event, props.onUpdate);
+      });
 
-    anotherComponent.instance().componentWillUnmount();
+      it('increments the channel counter when component is mounted,' +
+         ' and decrements the counter when component is unmounted', () => {
+        comp = shallow(<Pusher {...props} />);
+        expect(Pusher.channels[channel]).toBe(1);
+        const comp2 = shallow(<Pusher {...props} />);
+        expect(Pusher.channels[channel]).toBe(2);
+        comp2.unmount();
+        expect(Pusher.channels[channel]).toBe(1);
+      });
 
-    expect(pusherChannel.unbind).toHaveBeenCalledWith('log', anotherComponent.instance().onUpdate);
-    expect(PusherApi.unsubscribe).toHaveBeenCalledWith('test');
+      it('calls channel.unbind when component is unmounted', () => {
+        comp = shallow(<Pusher {...props} />);
+        comp.unmount();
+        expect(channelMock.unbind).toHaveBeenCalledWith(event, props.onUpdate);
+      });
+
+      it('automatically unsubscribes from channel when channel counter is 0', () => {
+        comp = shallow(<Pusher {...props} />);
+        const comp2 = shallow(<Pusher {...props} />);
+        comp2.unmount();
+        comp.unmount();
+        expect(pusherMock.unsubscribe).toHaveBeenCalledWith(channel);
+      });
+
+      it("doesn't unsubscribe from channel when channel counter is still above 0", () => {
+        comp = shallow(<Pusher {...props} />);
+        shallow(<Pusher {...props} />);
+        comp.unmount();
+        expect(pusherMock.unsubscribe).not.toHaveBeenCalled();
+        expect(Pusher.channels[channel]).toBe(1);
+      });
+    });
+
+    it('unbinds old event combo and binds new event,' +
+      ' unsubscribes from old channel if nobody subscribes to it', () => {
+      comp = shallow(<Pusher {...props} />);
+      expect(pusherMock.subscribe).toHaveBeenCalledWith(channel);
+      expect(channelMock.bind).toHaveBeenCalledWith(event, props.onUpdate);
+      const newChannel = 'newChannel';
+      const newEvent = 'newEvent';
+      comp.setProps({ channel: newChannel, event: newEvent });
+      jest.runAllTimers();
+      jest.runAllTicks();
+      expect(pusherMock.unsubscribe).toHaveBeenCalledWith(channel);
+      expect(channelMock.unbind).toHaveBeenCalledWith(event, props.onUpdate);
+      expect(pusherMock.subscribe).toHaveBeenCalledWith(newChannel);
+      expect(channelMock.bind).toHaveBeenCalledWith(newEvent, props.onUpdate);
+    });
   });
 });

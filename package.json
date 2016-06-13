@@ -11,5 +11,42 @@
     "react"
   ],
   "author": "",
-  "license": "MIT"
+  "license": "MIT",
+  "devDependencies": {
+    "babel-cli": "^6.10.1",
+    "babel-jest": "^12.1.0",
+    "babel-plugin-transform-class-properties": "^6.9.1",
+    "babel-polyfill": "^6.9.1",
+    "babel-preset-es2015": "^6.9.0",
+    "babel-preset-react": "^6.5.0",
+    "enzyme": "^2.3.0",
+    "eslint-config-rainforest": "^0.1.2",
+    "eslint-plugin-babel": "^3.2.0",
+    "eslint-plugin-flow-vars": "^0.4.0",
+    "eslint-plugin-import": "^1.8.1",
+    "eslint-plugin-jsx-a11y": "^1.4.2",
+    "eslint-plugin-react": "^5.1.1",
+    "event-emitter": "^0.3.4",
+    "pusher": "^1.3.0",
+    "pusher-test-stub": "github:pusher-community/pusher-js-test-stub",
+    "react-addons-test-utils": "^15.1.0",
+    "react-dom": "^15.1.0"
+  },
+  "dependencies": {
+    "immutable": "^3.8.1",
+    "lodash": "^4.13.1",
+    "react": "^15.1.0"
+  },
+  "jest": {
+    "unmockedModulePathPatterns": [
+      "<rootDir>/node_modules",
+      ".*mock.*",
+      ".*stub.*"
+    ],
+    "testPathIgnorePatterns": [
+      "<rootDir>/node_modules",
+      ".*mock.*",
+      ".*stub.*"
+    ]
+  }
 }
