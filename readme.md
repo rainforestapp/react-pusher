@@ -16,7 +16,7 @@ const pusherClient = new Pusher({
   <your_config>...
 });
 
-setPusher(pusherClient);
+setPusherClient(pusherClient);
 ```
 
 2. Then you simply mount the component, inside another component of yours. The pusher subscription will stay alive for as long as the component does. It subscribes to events when mounted, and cleans up hanging subscriptions when unmounted.
