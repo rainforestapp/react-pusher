@@ -5,7 +5,8 @@
   "main": "dist/index.js",
   "scripts": {
     "test": "npm test",
-    "build": "babel ./src/index.js -d ./dist"
+    "prepublish": "npm run build",
+    "build": "babel ./index.js ./dist"
   },
   "keywords": [
     "pusher",
