@@ -26,7 +26,7 @@ Here's an example of using pusher-react in combination with redux. Everytime we 
 ```js
 import { fetchList } from './actions';
 import store from '../../store';
-import { Pusher } from 'react-pusher';
+import Pusher from 'react-pusher';
 
 const SomeList = ({ items }) => (
   <div>
@@ -42,7 +42,7 @@ const SomeList = ({ items }) => (
 );
 ```
 
-## Rationale - Why would you need this?
+## Rationale
 
 We use pusher at rainforest. Previously our management of pusher notifications was wrapped in it's own service. A singleton, instantiated at app-startup.
 
@@ -52,3 +52,6 @@ Then we __noticed a pattern_-, subscriptions to push notifications __are tied to
 2. We want to unsubscribe above pusher stream when given component is unmounted.
 
 It made sense to move the management of pusher subscriptions into a React component, so we don't have to manage it ourselves.
+
+
+## [License: MIT](license.md)
