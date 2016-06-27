@@ -1,6 +1,6 @@
 {
   "name": "react-pusher",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "A react component for subscribing to pusher channels",
   "repository": "https://github.com/rainforestapp/react-pusher",
   "main": "dist/index.js",
