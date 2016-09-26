@@ -11,7 +11,7 @@ You can get `react-pusher` from npm, just run `npm install react-pusher --save`.
 1. To use react-pusher, you need to hand over your instance of the pusher service first. Otherwise the Pusher React component can't receive messages:
   ```js
   import { setPusherClient } from 'react-pusher';
-  import pusherClient from 'pusher-js';
+  import Pusher from 'pusher-js';
   
   const pusherClient = new Pusher({
     <your_config>...
