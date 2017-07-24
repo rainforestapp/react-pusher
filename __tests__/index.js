@@ -47,8 +47,7 @@ describe('Pusher', () => {
 
   describe('without pusherClient', () => {
     it('throws an error if no pusherClient is set when component is mounted', () => {
-      const render = () => shallow(<Pusher {...props} />);
-      expect(render).toThrow();
+      expect(() => shallow(<Pusher {...props} />)).toThrow();
     });
   });
 
@@ -63,9 +62,9 @@ describe('Pusher', () => {
     });
 
 
-    it('renders nothing but a noscript tag', () => {
+    it('renders nothing', () => {
       comp = shallow(<Pusher {...props} />);
-      expect(comp.html()).toEqual('<noscript></noscript>');
+      expect(comp.isEmptyRender()).toBeTruthy();
     });
 
     describe('on initialisation', () => {
