@@ -11,12 +11,14 @@ export default class Pusher extends Component {
   static channels = {};
 
   constructor(props) {
+    super(props);
     if (!Pusher.pusherClient) {
       throw new Error('you must set a pusherClient by calling setPusherClient');
     }
+  }
 
-    super(props);
-    this.bindPusherEvent(props.channel, props.event);
+  componentWillMount() {
+    this.bindPusherEvent(this.props.channel, this.props.event);
   }
 
   componentWillReceiveProps({ channel: newChannel, event: newEvent }) {
@@ -34,9 +36,12 @@ export default class Pusher extends Component {
   }
 
   unbindPusherEvent(channel, event) {
-    this._channel.unbind(event, this.props.onUpdate);
-    Pusher.channels[channel]--;
+    const pusherChannel = Pusher.pusherClient.channels.find(channel);
+    if (pusherChannel) {
+      pusherChannel.unbind(event, this.props.onUpdate);
+    }
 
+    Pusher.channels[channel]--;
     if (Pusher.channels[channel] <= 0) {
       delete Pusher.channels[channel];
       Pusher.pusherClient.unsubscribe(channel);
@@ -44,16 +49,14 @@ export default class Pusher extends Component {
   }
 
   bindPusherEvent(channel, event) {
-    this._channel =
+    const pusherChannel =
       Pusher.pusherClient.channels.find(channel)
       || Pusher.pusherClient.subscribe(channel);
-    this._channel.bind(event, this.props.onUpdate);
+    pusherChannel.bind(event, this.props.onUpdate);
 
     if (Pusher.channels[channel] === undefined) Pusher.channels[channel] = 0;
     Pusher.channels[channel]++;
   }
-
-  _channel = null;
 
   render() {
     return <noscript />;
