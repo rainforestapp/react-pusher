@@ -14,7 +14,7 @@ describe('Pusher', () => {
       { name: 'bar', bind: jest.fn(), unbind: jest.fn() },
     ];
 
-    const subscribedChannels = [];
+    let subscribedChannels = [];
 
     const findChannel = channelName =>
       channels.find(({ name }) => name === channelName);
@@ -29,10 +29,7 @@ describe('Pusher', () => {
         return ch;
       }),
       unsubscribe: jest.fn().mockImplementation(channelName => {
-        const index = subscribedChannels.findIndex(({ name }) => name === channelName);
-        if (index !== -1) {
-          subscribedChannels.splice(index, 1);
-        }
+        subscribedChannels = subscribedChannels.filter(({ name }) => name === channelName);
       }),
       channels: {
         find: jest.fn().mockImplementation(channelName => 
