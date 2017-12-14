@@ -89,7 +89,7 @@ var Pusher = function (_Component) {
   }, {
     key: 'render',
     value: function render() {
-      return _react2.default.createElement('noscript', null);
+      return null;
     }
   }]);
 

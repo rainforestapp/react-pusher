@@ -7,7 +7,7 @@
   "scripts": {
     "test": "jest",
     "prepublish": "npm run build",
-    "build": "babel ./index.js ./dist"
+    "build": "babel ./index.js -d ./dist"
   },
   "keywords": [
     "pusher",

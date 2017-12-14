@@ -60,7 +60,7 @@ export default class Pusher extends Component {
   }
 
   render() {
-    return <noscript />;
+    return null;
   }
 }
 
