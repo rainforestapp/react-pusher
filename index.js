@@ -22,14 +22,14 @@ export default class Pusher extends Component {
     this.bindPusherEvent(this.props.channel, this.props.event);
   }
 
-  componentWillReceiveProps({ channel: newChannel, event: newEvent }) {
-    const { channel, event } = this.props;
-    if (channel === newChannel && event === newEvent) {
+  componentDidUpdate({ channel: oldChannel, event: oldEvent }) {
+    const { channel: newChannel, event: newEvent } = this.props;
+    if (oldChannel === newChannel && oldEvent === newEvent) {
       return;
     }
 
     this.bindPusherEvent(newChannel, newEvent);
-    this.unbindPusherEvent(channel, event);
+    this.unbindPusherEvent(oldChannel, oldEvent);
   }
 
   componentWillUnmount() {
