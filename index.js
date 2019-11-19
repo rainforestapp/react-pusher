@@ -18,7 +18,7 @@ export default class Pusher extends Component {
     }
   }
 
-  componentWillMount() {
+  componentDidMount() {
     this.bindPusherEvent(this.props.channel, this.props.event);
   }
 
