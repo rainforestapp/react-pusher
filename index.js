@@ -1,11 +1,11 @@
-import React, { Component } from 'react';
-import T from 'prop-types'
+import { Component } from 'react';
+import PropTypes from 'prop-types';
 
 export default class Pusher extends Component {
   static propTypes = {
-    channel: T.string.isRequired,
-    onUpdate: T.func.isRequired,
-    event: T.string.isRequired,
+    channel: PropTypes.string.isRequired,
+    onUpdate: PropTypes.func.isRequired,
+    event: PropTypes.string.isRequired,
   };
 
   static pusherClient = null;
@@ -18,18 +18,18 @@ export default class Pusher extends Component {
     }
   }
 
-  componentWillMount() {
+  componentDidMount() {
     this.bindPusherEvent(this.props.channel, this.props.event);
   }
 
-  componentWillReceiveProps({ channel: newChannel, event: newEvent }) {
-    const { channel, event } = this.props;
-    if (channel === newChannel && event === newEvent) {
+  componentDidUpdate({ channel: oldChannel, event: oldEvent }) {
+    const { channel: newChannel, event: newEvent } = this.props;
+    if (oldChannel === newChannel && oldEvent === newEvent) {
       return;
     }
 
     this.bindPusherEvent(newChannel, newEvent);
-    this.unbindPusherEvent(channel, event);
+    this.unbindPusherEvent(oldChannel, oldEvent);
   }
 
   componentWillUnmount() {

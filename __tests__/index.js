@@ -1,6 +1,6 @@
 jest.unmock('../');
 import Pusher, { setPusherClient } from '../';
-import { shallow } from 'enzyme';
+import { mount } from 'enzyme';
 import React from 'react';
 
 let comp, props, channels, pusherMock;
@@ -16,9 +16,6 @@ describe('Pusher', () => {
 
     let subscribedChannels = [];
 
-    const findChannel = channelName =>
-      channels.find(({ name }) => name === channelName);
-
     pusherMock = {
       subscribe: jest.fn().mockImplementation(channelName => {
         const ch = channels.find(({ name }) => name === channelName);
@@ -32,7 +29,7 @@ describe('Pusher', () => {
         subscribedChannels = subscribedChannels.filter(({ name }) => name === channelName);
       }),
       channels: {
-        find: jest.fn().mockImplementation(channelName => 
+        find: jest.fn().mockImplementation(channelName =>
           subscribedChannels.find(({ name }) => channelName === name)
         ),
       },
@@ -47,8 +44,7 @@ describe('Pusher', () => {
 
   describe('without pusherClient', () => {
     it('throws an error if no pusherClient is set when component is mounted', () => {
-      const render = () => shallow(<Pusher {...props} />);
-      expect(render).toThrow();
+      expect(() => mount(<Pusher {...props} />)).toThrow();
     });
   });
 
@@ -63,62 +59,62 @@ describe('Pusher', () => {
     });
 
 
-    it('renders nothing but a noscript tag', () => {
-      comp = shallow(<Pusher {...props} />);
-      expect(comp.html()).toEqual('<noscript></noscript>');
+    it('renders nothing', () => {
+      comp = mount(<Pusher {...props} />);
+      expect(comp.isEmptyRender()).toBeTruthy();
     });
 
     describe('on initialisation', () => {
       it('calls pusher.channels.find to get a pre-existing channel', () => {
-        comp = shallow(<Pusher {...props} />);
+        comp = mount(<Pusher {...props} />);
         expect(pusherMock.channels.find).toBeCalledWith(channel);
       });
 
       it('calls pusher.subscribe if pusherMock.channels.find does not return a channel', () => {
-        comp = shallow(<Pusher {...props} />);
+        comp = mount(<Pusher {...props} />);
         expect(pusherMock.subscribe).toBeCalledWith(channel);
       });
 
       it('does not call pusherMock.subscribe if pusher.channels.find finds a channel', () => {
         pusherMock.subscribe(channel);
         pusherMock.subscribe.mockClear();
-        comp = shallow(<Pusher {...props} />);
+        comp = mount(<Pusher {...props} />);
         expect(pusherMock.channels.find).toBeCalledWith(channel);
         expect(pusherMock.subscribe).not.toBeCalled();
       });
 
       it('subscribes to channel and binds this.onUpdate to channel', () => {
-        comp = shallow(<Pusher {...props} />);
+        comp = mount(<Pusher {...props} />);
         expect(channels[0].bind).toBeCalledWith(event, props.onUpdate);
       });
 
       it('increments the channel counter when component is mounted,' +
          ' and decrements the counter when component is unmounted', () => {
-        comp = shallow(<Pusher {...props} />);
+        comp = mount(<Pusher {...props} />);
         expect(Pusher.channels[channel]).toBe(1);
-        const comp2 = shallow(<Pusher {...props} />);
+        const comp2 = mount(<Pusher {...props} />);
         expect(Pusher.channels[channel]).toBe(2);
         comp2.unmount();
         expect(Pusher.channels[channel]).toBe(1);
       });
 
       it('calls channel.unbind when component is unmounted', () => {
-        comp = shallow(<Pusher {...props} />);
+        comp = mount(<Pusher {...props} />);
         comp.unmount();
         expect(channels[0].unbind).toBeCalledWith(event, props.onUpdate);
       });
 
       it('automatically unsubscribes from channel when channel counter is 0', () => {
-        comp = shallow(<Pusher {...props} />);
-        const comp2 = shallow(<Pusher {...props} />);
+        comp = mount(<Pusher {...props} />);
+        const comp2 = mount(<Pusher {...props} />);
         comp2.unmount();
         comp.unmount();
         expect(pusherMock.unsubscribe).toBeCalledWith(channel);
       });
 
       it("doesn't unsubscribe from channel when channel counter is still above 0", () => {
-        comp = shallow(<Pusher {...props} />);
-        shallow(<Pusher {...props} />);
+        comp = mount(<Pusher {...props} />);
+        mount(<Pusher {...props} />);
         comp.unmount();
         expect(pusherMock.unsubscribe).not.toBeCalled();
         expect(Pusher.channels[channel]).toBe(1);
@@ -127,7 +123,7 @@ describe('Pusher', () => {
 
     it('unbinds old event combo and binds new event,' +
       ' unsubscribes from old channel if nobody subscribes to it', () => {
-      comp = shallow(<Pusher {...props} />);
+      comp = mount(<Pusher {...props} />);
       expect(pusherMock.subscribe).toBeCalledWith(channel);
       expect(channels[0].bind).toBeCalledWith(event, props.onUpdate);
       const newChannel = 'bar';
