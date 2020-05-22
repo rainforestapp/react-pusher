@@ -36,7 +36,7 @@ const SomeList = ({ items }) => (
     <Pusher
       channel="someChannel"
       event="listChanged"
-      onUpdate={store.dispatch(fetchList())}
+      onUpdate={() => store.dispatch(fetchList())}
     />
   </div>
 );
